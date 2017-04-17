@@ -5,5 +5,158 @@ output: html_notebook
 
 ```{r}
 library(tidyverse)
+library(nycflights13)
 ```
+
+## Filter
+
+### Exercise 1-a
+Flights with arrival delay of 2hrs or more.
+```{r}
+flights %>% select(flight, arr_delay) %>%
+  filter(arr_delay >= 120) %>%
+  arrange(desc(flight))
+# 10200
+```
+
+### Exercise 1-b
+Flights to Houston (IAH or HOU)
+```{r}
+# glimpse(flights)
+
+flights %>% select(flight, dest) %>% 
+  filter(dest %in% c("IAH", "HOU")) %>% 
+  arrange(desc(flight))
+# 9313
+```
+
+### Exercise 1-c
+Flights operated by United, American or Delta
+```{r}
+# Which flight operators are present?
+flights %>% distinct(carrier) %>% arrange(desc(carrier))
+
+# Filter UA, AA, DL
+flights %>% filter(carrier %in% c("UA", "AA", "DL"))
+# 139504 flights
+```
+
+### Exercise 1-d
+Flights departed in summer (July, August, September)
+```{r}
+flights %>% filter(month %in% c(7, 8, 9))
+# 86326 flights
+
+# alternative methods
+# flights %>% filter(month >= 7 & month <= 9)
+# flights %>% filter(between(month, 7, 9))
+```
+
+
+### Exercise 1-e
+Arrived more than 2 hours later but didn't leave late.
+```{r}
+flights %>% filter(arr_delay > 120 & dep_delay == 0)
+# 3 flights
+```
+
+### Exercise 1-f
+Delayed by at least an hour but made up at least 30 minutes in flight.
+```{r}
+flights %>% filter(dep_delay > 60 & arr_delay < -30)
+# No flights
+```
+
+### Exercise 1-g
+Departed between midnight and 6am, inclusive.
+```{r}
+# Visualise flight distribution
+# ggplot(flights, aes(x = dep_time)) +
+#  geom_histogram(binwidth = 60)
+
+flights %>% filter(dep_time >= 0 & dep_time <= 600)
+# 9344 flights
+```
+
+
+### Exercise 2
+
+See 1-d above
+
+### Exercise 3
+
+How many flights have missing `dep_time`? 
+
+```{r}
+flights %>% filter(is.na(dep_time))
+# 8255 flights with NA dep_time. These flights also have other missing variables such as dep_delay that are indicative of the flight actually taking place. These flights were likely cancelled.
+```
+
+
+### Exercise 4
+
+```{r}
+NA ^ 0
+# 1
+
+NA | TRUE
+# TRUE
+
+FALSE & NA
+# FALSE
+
+NA * 0
+# NA
+```
+
+
+## Arrange
+
+### Exercise 1
+Sort NAs to start.
+```{r}
+flights %>% arrange(desc(is.na(dep_delay)))
+```
+
+### Exercise 2
+Most delayed flights.
+```{r}
+flights %>% arrange(desc(dep_delay))
+```
+
+Flights that left earliest.
+```{r}
+flights %>% arrange(desc(desc(dep_delay)))
+```
+
+
+### Exercise 3
+Sort to find fastest flights.
+```{r}
+flights %>% arrange(desc(distance/air_time))
+```
+
+
+### Exercise 4
+Longest travelled flights.
+```{r}
+flights %>% arrange(desc(distance))
+# JFK to HNL the longest
+```
+
+Shortest travelled flights.
+```{r}
+flights %>% arrange(desc(desc(distance)))
+# EWL to PHL the shortest of flights that weren't cancelled
+```
+
+
+
+
+
+
+
+
+
+
 
