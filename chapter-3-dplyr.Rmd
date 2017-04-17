@@ -150,6 +150,58 @@ flights %>% arrange(desc(desc(distance)))
 # EWL to PHL the shortest of flights that weren't cancelled
 ```
 
+## Select
+
+### Exercise 1
+Different select routes for dep_time, dep_delay, arr_time, and arr_delay from flights.
+```{r}
+# glimpse(flights)
+
+library(microbenchmark)
+dplyr1 <- flights %>% select(dep_time, dep_delay, arr_time, arr_delay)
+dplyr1_2 <- select(flights, dep_time, dep_delay, arr_time, arr_delay)
+dplyr2 <- flights %>% select(starts_with("dep_"),  starts_with("arr_"))
+dplyr2_2 <- select(flights, starts_with("dep_"),  starts_with("arr_"))
+
+# Base R
+vars <- c("dep_time", "dep_delay", "arr_time", "arr_delay")
+base1 <- flights[vars]
+
+# Benchmark 
+bench <- microbenchmark(dplyr1, dplyr1_2, dplyr2, dplyr2_2, base1, times = 10000L)
+bench
+rm(list = ls())
+```
+
+Of the different approaches dplyr select without piping using helper functions is slightly faster on average - but only by a few nanoseconds.
+
+### Exercise 2
+Include variable multiple times
+```{r}
+flights %>% select(dep_delay, dep_delay)
+```
+Only return one column.
+
+### Exercise 3
+`one_of()` selects from a character vector. This vector could be passed directly to `select`.
+```{r}
+vars <- c("year", "month", "day", "dep_delay", "arr_delay")
+flights %>% select(one_of(vars))
+
+```
+
+
+### Exercise 4
+The following is not case sensitive.
+```{r}
+select(flights, contains("TIME"))
+```
+
+The select helper `contains` can be ammended to be case sensitive.
+```{r}
+select(flights, contains("TIME", ignore.case = FALSE))
+```
+But there are no columns with TIME in their name.
 
 
 
