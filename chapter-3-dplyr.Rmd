@@ -1,5 +1,5 @@
 ---
-title: "Data transformation with dplyr"
+title: "Chapter 3: Data transformation with dplyr"
 output: html_notebook
 ---
 
