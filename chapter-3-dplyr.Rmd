@@ -204,6 +204,105 @@ select(flights, contains("TIME", ignore.case = FALSE))
 But there are no columns with TIME in their name.
 
 
+## Mutate and transmute
+
+### Exercise 1
+Convert `dep_time` and `sched_dep_time` (presented as hhmm) into total number of minutes.
+```{r}
+# glimpse(flights)
+
+# integer division (%/%) of hhmm format to get number of hours then multiply by 60 for minutes
+# then add remainder (%%) minutes
+flights %>% transmute(dep_time_mins = dep_time %/% 100 * 60 + dep_time %% 100,
+                      sched_dep_time_mins = sched_dep_time %/% 100 * 60 + sched_dep_time %% 100)
+```
+
+### Exercise 2
+Compare `air_time` with `arr_time`-`dep_time`. 
+
+They should be the same. Let's check...
+```{r}
+flights %>% transmute(air_time, arr_dep_time = arr_time - dep_time)
+```
+They are not the same. 
+
+Why?
+
+Arrival and depart times are in hhmm format so we can convert these into pure minutes.
+```{r}
+# glimpse(flights)
+
+# Function to convert hhmm to mins
+hhmm2mins <- function(x) {
+  xhrs <- x %/% 100 * 60
+  xmm <- x %% 100
+  xmins <- xhrs + xmm
+  xmins
+}
+
+flights %>% transmute(carrier, flight, air_time, 
+                      arr_time, dep_time,
+                      arr_dep_mins = hhmm2mins(arr_time) - hhmm2mins(dep_time)) %>%
+  mutate(air_time_diff = arr_dep_mins - air_time) %>% 
+  select(-arr_time, -dep_time) %>% 
+  arrange(desc(air_time_diff))
+```
+There is still a difference.
+Are there any instances where two methods are the same?
+
+```{r}
+# glimpse(flights)
+
+flights %>% transmute(carrier, flight, origin, dest, air_time, 
+                      arr_time, dep_time,
+                      arr_dep_mins = hhmm2mins(arr_time) - hhmm2mins(dep_time)) %>%
+  mutate(air_time_diff = arr_dep_mins - air_time) %>% 
+  select(-carrier, -flight) 
+# %>% filter(air_time == arr_dep_mins)
+```
+I think there are two problems:
+1. Some flights are not within the same time zone - RITA, Bureau of transportation statistics, http://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236 says all times are given in local time zone.
+2. There are taxi times on the runway to be taken into account - not included in `air_time` variable.
+3. Some flights occur overnight, this needs to be taken into account when calculating total flight times.
+
+### Exercise 3
+Comparing `dep_time`, `sched_dep_time` and `dep_delay`. `dep_delay` should be `dep_time` - `sched_dep_time`.
+```{r}
+flights %>% select(flight, origin, dest, dep_time, sched_dep_time, dep_delay) %>% 
+  mutate(dep_delay_calc = hhmm2mins(dep_time) - hhmm2mins(sched_dep_time)) %>% 
+  arrange(dep_delay_calc)
+```
+However, overnight flights create a problem with performing simple subtraction of `dep_time` - `sched_dep_time` to obtain flight delays for all journeys.
+
+### Exercise 4
+Find the 10 most delayed flights using ranking.
+
+```{r}
+delayed <- flights %>% transmute(flight, carrier, dep_delay, arr_delay, rank = min_rank(desc(arr_delay))) %>% arrange(rank)
+
+
+delayed %>% mutate(hhmm2mins(dep_delay))
+
+ggplot(delayed, aes(x = dep_delay )) + 
+  geom_histogram(bins = 200)
+  
+View(flights)
+  
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
