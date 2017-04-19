@@ -1,0 +1,6 @@
+---
+title: "Chapter 5: Exporatory Data Analysis"
+author: "Mark Ruddy"
+date: "18 April 2017"
+output: html_document
+---
